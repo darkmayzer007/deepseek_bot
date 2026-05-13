@@ -16,7 +16,67 @@
             color: #e0e0e0;
             overflow: hidden;
         }
-        /* Левая панель с сердцем */
+
+        /* ========== ЦЕНТРАЛЬНАЯ НАДПИСЬ ========== */
+        .center-love-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            pointer-events: none;
+            text-align: center;
+            font-size: 36px;
+            font-weight: 900;
+            color: #ff1744;
+            text-shadow:
+                0 0 20px rgba(255, 23, 68, 0.8),
+                0 0 40px rgba(255, 23, 68, 0.5),
+                0 0 80px rgba(255, 23, 68, 0.3);
+            animation: centerTextGlow 2s ease-in-out infinite;
+            line-height: 1.3;
+            letter-spacing: 2px;
+            user-select: none;
+            white-space: nowrap;
+        }
+        .center-love-text .line1 {
+            display: block;
+            animation: textFloat 3s ease-in-out infinite;
+        }
+        .center-love-text .line2 {
+            display: block;
+            font-size: 28px;
+            animation: textFloat 3s ease-in-out infinite 0.3s;
+        }
+
+        @keyframes centerTextGlow {
+            0%, 100% { text-shadow: 0 0 20px rgba(255, 23, 68, 0.8), 0 0 40px rgba(255, 23, 68, 0.5), 0 0 80px rgba(255, 23, 68, 0.3); }
+            50% { text-shadow: 0 0 30px rgba(255, 23, 68, 1), 0 0 60px rgba(255, 23, 68, 0.7), 0 0 100px rgba(255, 23, 68, 0.4); }
+        }
+        @keyframes textFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Орбитальные сердечки вокруг текста */
+        .orbit-heart {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            z-index: 49;
+            pointer-events: none;
+            font-size: 20px;
+            animation: orbitFloat 4s ease-in-out infinite;
+            opacity: 0;
+        }
+        @keyframes orbitFloat {
+            0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+            20% { opacity: 0.9; }
+            80% { opacity: 0.9; }
+            100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+        }
+
+        /* ========== ЛЕВОЕ СЕРДЦЕ ========== */
         .left-heart {
             position: fixed;
             left: 30px;
@@ -25,28 +85,34 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
+            gap: 10px;
             z-index: 100;
         }
         .left-heart .heart-icon {
-            font-size: 80px;
+            font-size: 70px;
             animation: heartbeat 1.2s ease-in-out infinite;
             filter: drop-shadow(0 0 30px rgba(255, 0, 0, 0.6));
             cursor: pointer;
             user-select: none;
+            transition: transform 0.1s;
         }
-        .left-heart .heart-icon:hover {
-            animation: heartbeat 0.6s ease-in-out infinite;
+        .left-heart .heart-icon:active {
+            transform: scale(0.85);
         }
-        .left-heart .heart-text {
-            font-size: 18px;
-            font-weight: 700;
-            color: #ff1744;
-            text-shadow: 0 0 20px rgba(255, 23, 68, 0.5), 0 0 40px rgba(255, 23, 68, 0.3);
+        .left-heart .click-hint {
+            font-size: 11px;
+            color: rgba(255, 75, 75, 0.8);
             text-align: center;
-            writing-mode: vertical-rl;
-            letter-spacing: 6px;
-            animation: pulseText 2s ease-in-out infinite;
+            animation: pulseHint 1.5s ease-in-out infinite;
+            background: rgba(255, 0, 0, 0.1);
+            padding: 4px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 75, 75, 0.2);
+            white-space: nowrap;
+        }
+        @keyframes pulseHint {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
         }
         @keyframes heartbeat {
             0%, 100% { transform: scale(1); }
@@ -55,28 +121,8 @@
             42% { transform: scale(1.3); }
             70% { transform: scale(1); }
         }
-        @keyframes pulseText {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-        /* Частицы-сердечки */
-        .particle-heart {
-            position: fixed;
-            left: 40px;
-            font-size: 14px;
-            pointer-events: none;
-            animation: floatHeart 4s ease-in-out infinite;
-            opacity: 0;
-        }
-        @keyframes floatHeart {
-            0% { transform: translateY(0) scale(0.5); opacity: 0; }
-            20% { opacity: 0.8; }
-            80% { opacity: 0.8; }
-            100% { transform: translateY(-120px) scale(1.2); opacity: 0; }
-        }
-        @media (max-width: 900px) {
-            .left-heart { display: none; }
-        }
+
+        /* ========== ЧАТ ========== */
         .chat-container {
             width: 100%;
             max-width: 800px;
@@ -89,6 +135,8 @@
             overflow: hidden;
             box-shadow: 0 8px 32px rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            z-index: 10;
         }
         .chat-header {
             padding: 16px 24px;
@@ -265,16 +313,32 @@
             .chat-messages { padding: 16px; }
             .message { max-width: 95%; }
         }
+        @media (max-width: 900px) {
+            .left-heart { display: none; }
+        }
     </style>
 </head>
 <body>
-    <!-- Левая панель с сердцем -->
-    <div class="left-heart" id="leftHeart">
-        <div class="heart-icon" onclick="spawnHeartShower()">❤️</div>
-        <div class="heart-text">I LOVE MY ZAIKA ALEXANDRA</div>
+
+    <!-- ========== ЦЕНТРАЛЬНАЯ НАДПИСЬ ========== -->
+    <div class="center-love-text">
+        <span class="line1">I LOVE MY ZAIKA</span>
+        <span class="line2">ALEXANDRA ❤️</span>
     </div>
-    <!-- Плавающие сердечки появляются при клике -->
+
+    <!-- Орбитальные сердечки вокруг текста -->
+    <div id="orbitContainer"></div>
+
+    <!-- ========== ЛЕВОЕ СЕРДЦЕ ========== -->
+    <div class="left-heart" id="leftHeart">
+        <div class="heart-icon" id="heartBtn">❤️</div>
+        <div class="click-hint">👆 кликай меня</div>
+    </div>
+
+    <!-- Контейнер для частиц -->
     <div id="particleContainer"></div>
+
+    <!-- ========== ЧАТ ========== -->
     <div class="chat-container">
         <div class="chat-header">
             <h1>🤖 <span>DeepSeek</span> AI</h1>
@@ -315,6 +379,7 @@
     <script>
         let sessionId = 'session_' + Date.now();
         let isLoading = false;
+        let clickCount = 0;
 
         const messagesDiv = document.getElementById('chatMessages');
         const inputEl = document.getElementById('messageInput');
@@ -322,6 +387,115 @@
         const typingIndicator = document.getElementById('typingIndicator');
         const modelSelect = document.getElementById('modelSelect');
 
+        // ========== ФРАЗЫ ДЛЯ ЧАСТИЦ ==========
+        const lovePhrases = [
+            'Я тебя очень сильно люблю ❤️',
+            'Я скучаю по тебе 💕',
+            'Ты моя конфетка 🍬',
+            'Ты моя сладость 🍫',
+            'Ты моя нежная 🌸',
+            'Ты моя кошечка 😺',
+            'Ты моя любовь 💖',
+            'Все будет супер отлично ✨',
+            'Все будет хорошо 🌈',
+            'Ты моя милашка 🥰',
+        ];
+
+        // ========== ОРБИТАЛЬНЫЕ СЕРДЕЧКИ ==========
+        function spawnOrbitHearts() {
+            const container = document.getElementById('orbitContainer');
+            const colors = ['#ff1744', '#ff4081', '#e040fb', '#ff6f00', '#ff5252'];
+            for (let i = 0; i < 8; i++) {
+                const el = document.createElement('div');
+                el.className = 'orbit-heart';
+                el.textContent = ['❤️', '💖', '💗', '💝', '💕', '♥️'][Math.floor(Math.random() * 6)];
+                const angle = (i / 8) * Math.PI * 2;
+                const radius = 120 + Math.random() * 60;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                el.style.transform = 'translate(-50%, -50%)';
+                el.style.translate = x + 'px ' + y + 'px';
+                el.style.animationDelay = (i * 0.5) + 's';
+                el.style.animationDuration = (3 + Math.random() * 2) + 's';
+                el.style.fontSize = (14 + Math.random() * 14) + 'px';
+                container.appendChild(el);
+                setTimeout(() => el.remove(), 5000);
+            }
+        }
+
+        // Запускаем орбитальные сердечки каждые 5 секунд
+        setInterval(spawnOrbitHearts, 5000);
+        spawnOrbitHearts();
+
+        // ========== ДОЖДЬ ИЗ СЕРДЕЧЕК И ФРАЗ ==========
+        function spawnHeartShower() {
+            clickCount++;
+            const itemsCount = Math.min(15 + clickCount * 2, 80); // чем больше кликов, тем больше
+            const container = document.getElementById('particleContainer');
+            const heartEmojis = ['❤️', '💖', '💗', '💝', '💕', '♥️', '💓', '💘'];
+
+            for (let i = 0; i < itemsCount; i++) {
+                const el = document.createElement('div');
+                el.style.position = 'fixed';
+                el.style.zIndex = '9999';
+                el.style.pointerEvents = 'none';
+                el.style.userSelect = 'none';
+                el.style.fontWeight = '700';
+
+                // 60% сердечко, 40% фраза
+                if (Math.random() < 0.4) {
+                    el.textContent = lovePhrases[Math.floor(Math.random() * lovePhrases.length)];
+                    el.style.fontSize = (14 + Math.random() * 18) + 'px';
+                    el.style.color = ['#ff1744', '#ff4081', '#e040fb', '#ff6f00', '#ff5252', '#d500f9'][Math.floor(Math.random() * 6)];
+                    el.style.textShadow = '0 0 15px rgba(255,23,68,0.5)';
+                    el.style.background = 'rgba(255,255,255,0.05)';
+                    el.style.padding = '4px 12px';
+                    el.style.borderRadius = '20px';
+                    el.style.backdropFilter = 'blur(4px)';
+                    el.style.border = '1px solid rgba(255,255,255,0.1)';
+                } else {
+                    el.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+                    el.style.fontSize = (16 + Math.random() * 30) + 'px';
+                }
+
+                // Случайная позиция по всей странице
+                el.style.left = (Math.random() * 95) + '%';
+                el.style.top = (Math.random() * 90) + '%';
+
+                // Анимация: всплытие + исчезание
+                const startScale = 0.3 + Math.random() * 0.7;
+                const endScale = 0.8 + Math.random() * 0.8;
+                const floatY = -30 - Math.random() * 80;
+                const floatX = -40 + Math.random() * 80;
+                const duration = 2 + Math.random() * 3;
+                const delay = Math.random() * 1.5;
+
+                el.style.animation = `none`;
+                el.style.opacity = '0';
+                el.style.transform = `scale(${startScale})`;
+
+                container.appendChild(el);
+
+                // Запускаем анимацию через микротаск
+                requestAnimationFrame(() => {
+                    el.style.transition = `all ${duration}s ease-out`;
+                    el.style.transitionDelay = delay + 's';
+                    el.style.opacity = '0.9';
+                    el.style.transform = `translate(${floatX}px, ${floatY}px) scale(${endScale})`;
+                });
+
+                setTimeout(() => {
+                    el.style.transition = `opacity 0.5s ease-out`;
+                    el.style.opacity = '0';
+                    setTimeout(() => el.remove(), 600);
+                }, (duration + delay) * 1000 - 500);
+            }
+        }
+
+        // Клик по сердечку
+        document.getElementById('heartBtn').addEventListener('click', spawnHeartShower);
+
+        // ========== ФУНКЦИИ ЧАТА ==========
         function scrollToBottom() {
             setTimeout(() => messagesDiv.scrollTop = messagesDiv.scrollHeight, 50);
         }
@@ -425,37 +599,6 @@
                 </div>
             `;
         }
-
-        function spawnHeartShower() {
-            const container = document.getElementById('particleContainer');
-            const emojis = ['❤️', '💖', '💗', '💝', '💕', '♥️'];
-            for (let i = 0; i < 30; i++) {
-                const heart = document.createElement('div');
-                heart.className = 'particle-heart';
-                heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-                heart.style.left = (20 + Math.random() * 120) + 'px';
-                heart.style.fontSize = (12 + Math.random() * 20) + 'px';
-                heart.style.animationDuration = (3 + Math.random() * 4) + 's';
-                heart.style.animationDelay = (Math.random() * 2) + 's';
-                heart.style.top = (window.innerHeight * (0.2 + Math.random() * 0.6)) + 'px';
-                container.appendChild(heart);
-                setTimeout(() => heart.remove(), 6000);
-            }
-        }
-
-        // Авто-сердечки каждые 10 секунд
-        setInterval(() => {
-            const container = document.getElementById('particleContainer');
-            const heart = document.createElement('div');
-            heart.className = 'particle-heart';
-            heart.textContent = '❤️';
-            heart.style.left = (30 + Math.random() * 80) + 'px';
-            heart.style.fontSize = '10px';
-            heart.style.animationDuration = '6s';
-            heart.style.top = (window.innerHeight * 0.5) + 'px';
-            container.appendChild(heart);
-            setTimeout(() => heart.remove(), 7000);
-        }, 3000);
 
         inputEl.focus();
     </script>
