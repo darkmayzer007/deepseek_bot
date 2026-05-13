@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek AI — Веб-чат</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #e0e0e0;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .chat-header {
+            padding: 16px 24px;
+            background: rgba(255,255,255,0.08);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .chat-header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-header h1 span {
+            color: #6c63ff;
+        }
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .model-selector label {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+        }
+        .model-selector select {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #e0e0e0;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            outline: none;
+        }
+        .model-selector select:focus {
+            border-color: #6c63ff;
+        }
+        .model-selector select option {
+            background: #302b63;
+            color: #e0e0e0;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-clear {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #e0e0e0;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .btn-clear:hover {
+            background: rgba(255,80,80,0.2);
+            border-color: #ff5050;
+            color: #ff5050;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 90%;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user { align-self: flex-end; flex-direction: row-reverse; }
+        .message.assistant { align-self: flex-start; }
+        .avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; flex-shrink: 0;
+        }
+        .message.user .avatar { background: #6c63ff; }
+        .message.assistant .avatar { background: #00c853; }
+        .bubble {
+            padding: 12px 16px; border-radius: 16px;
+            line-height: 1.6; font-size: 14px;
+            white-space: pre-wrap; word-wrap: break-word;
+        }
+        .message.user .bubble {
+            background: #6c63ff; color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message.assistant .bubble {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-bottom-left-radius: 4px;
+        }
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            padding: 12px 16px;
+            margin: 0 24px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-bottom-left-radius: 4px;
+            gap: 4px;
+        }
+        .typing-indicator.active { display: flex; }
+        .typing-indicator span {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #6c63ff; animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+        .chat-input {
+            padding: 16px 24px;
+            background: rgba(255,255,255,0.05);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input textarea {
+            flex: 1;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: #e0e0e0;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            min-height: 48px;
+            max-height: 120px;
+            transition: border-color 0.2s;
+        }
+        .chat-input textarea:focus { border-color: #6c63ff; }
+        .chat-input textarea::placeholder { color: rgba(255,255,255,0.4); }
+        .btn-send {
+            background: #6c63ff;
+            border: none; color: white;
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .btn-send:hover { background: #5a52e0; transform: scale(1.05); }
+        .btn-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-send svg { width: 20px; height: 20px; }
+        @media (max-width: 600px) {
+            .chat-container { height: 100vh; border-radius: 0; max-width: 100%; }
+            .chat-messages { padding: 16px; }
+            .message { max-width: 95%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🤖 <span>DeepSeek</span> AI</h1>
+            <div class="model-selector">
+                <label>Модель:</label>
+                <select id="modelSelect">
+                    <option value="deepseek-chat">DeepSeek V2.5 (базовая)</option>
+                    <option value="deepseek-v4-pro" selected>🔥 DeepSeek V4 Pro</option>
+                    <option value="deepseek-v4-flash">⚡ DeepSeek V4 Flash</option>
+                </select>
+            </div>
+            <div class="header-buttons">
+                <button class="btn-clear" onclick="clearHistory()">🧹 Очистить</button>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message assistant">
+                <div class="avatar">🤖</div>
+                <div class="bubble">Привет! Я DeepSeek AI (выбрана DeepSeek V4 Pro). Задавай любые вопросы — отвечу без ограничений! 🚀</div>
+            </div>
+        </div>
+        <div class="typing-indicator" id="typingIndicator">
+            <span></span><span></span><span></span>
+        </div>
+        <div class="chat-input">
+            <textarea id="messageInput" placeholder="Напиши сообщение... (можно вставлять текст Ctrl+V)" rows="1"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
+                onpaste="setTimeout(() => this.style.height='auto', 0)"></textarea>
+            <button class="btn-send" id="sendBtn" onclick="sendMessage()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = 'session_' + Date.now();
+        let isLoading = false;
+
+        const messagesDiv = document.getElementById('chatMessages');
+        const inputEl = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const modelSelect = document.getElementById('modelSelect');
+
+        function scrollToBottom() {
+            setTimeout(() => messagesDiv.scrollTop = messagesDiv.scrollHeight, 50);
+        }
+
+        function addMessage(role, content) {
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+            const avatar = role === 'user' ? '👤' : '🤖';
+            div.innerHTML = `<div class="avatar">${avatar}</div><div class="bubble">${content}</div>`;
+            messagesDiv.appendChild(div);
+            scrollToBottom();
+            return div;
+        }
+
+        function getLastBubble() {
+            return messagesDiv.querySelector('.message.assistant:last-child .bubble');
+        }
+
+        async function sendMessage() {
+            const text = inputEl.value.trim();
+            if (!text || isLoading) return;
+
+            inputEl.value = '';
+            inputEl.style.height = 'auto';
+            isLoading = true;
+            sendBtn.disabled = true;
+
+            addMessage('user', text);
+            typingIndicator.classList.add('active');
+            addMessage('assistant', '');
+
+            const selectedModel = modelSelect.value;
+
+            try {
+                const response = await fetch('/chat/stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: text,
+                        model: selectedModel
+                    })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullText = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+                            if (data.startsWith('[ERROR]')) {
+                                fullText += '\n\n❌ ' + data.slice(7);
+                                continue;
+                            }
+                            fullText += data;
+                        }
+                    }
+
+                    const bubble = getLastBubble();
+                    if (bubble) {
+                        bubble.textContent = fullText;
+                        scrollToBottom();
+                    }
+                }
+
+            } catch (err) {
+                const bubble = getLastBubble();
+                if (bubble) bubble.textContent = '❌ Ошибка соединения: ' + err.message;
+            } finally {
+                typingIndicator.classList.remove('active');
+                isLoading = false;
+                sendBtn.disabled = false;
+                inputEl.focus();
+            }
+        }
+
+        inputEl.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        async function clearHistory() {
+            await fetch('/clear', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: sessionId })
+            });
+            messagesDiv.innerHTML = `
+                <div class="message assistant">
+                    <div class="avatar">🤖</div>
+                    <div class="bubble">История очищена! Начинаем с чистого листа. 🧹</div>
+                </div>
+            `;
+        }
+
+        inputEl.focus();
+    </script>
+</body>
+</html>
