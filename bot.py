@@ -1,3 +1,4 @@
+import os
 import re
 import asyncio
 import logging
@@ -8,11 +9,14 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 from memory_store import MemoryStore
 from web_search import search_web, format_search_results
 
-# ========== НАСТРОЙКИ ==========
-TELEGRAM_TOKEN = "8651924796:AAFRvM8NW9RDDPEp3lzVO2WS488VLvNIa5o"
-DEEPSEEK_API_KEY = "sk-e114292580b4441f87b4827ddeddb4fc"
-DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
-DEEPSEEK_MODEL = "deepseek-chat"
+# ========== НАСТРОЙКИ (из переменных окружения) ==========
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "")
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+DEEPSEEK_BASE_URL = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
+DEEPSEEK_MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
+
+if not TELEGRAM_TOKEN or not DEEPSEEK_API_KEY:
+    raise ValueError("❌ TELEGRAM_TOKEN и DEEPSEEK_API_KEY должны быть заданы в переменных окружения!")
 
 SYSTEM_PROMPT = (
     "Ты — полезный ассистент. Отвечай на русском языке, если пользователь пишет по-русски. "
@@ -223,7 +227,29 @@ def main():
     # Глобальный обработчик ошибок
     app.add_error_handler(error_handler)
 
-    logger.info("🤖 DeepSeek Bot запущен! Нажмите Ctrl+C для остановки.")
+    port = int(os.environ.get("PORT", "8080"))
+    logger.info(f"🤖 DeepSeek Bot запущен на порту {port}! Нажмите Ctrl+C для остановки.")
+
+    # Railway ожидает, что приложение слушает порт
+    # Запускаем healthcheck-сервер в фоне
+    from threading import Thread
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+
+    class HealthHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"OK")
+        def log_message(self, format, *args):
+            pass
+
+    def run_health_server():
+        server = HTTPServer(("0.0.0.0", port), HealthHandler)
+        server.serve_forever()
+
+    t = Thread(target=run_health_server, daemon=True)
+    t.start()
+
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
