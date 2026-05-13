@@ -141,29 +141,14 @@
             z-index: 9999;
             pointer-events: none;
             user-select: none;
+            animation: particleFly 3s ease-out forwards;
             will-change: transform, opacity;
         }
-        .particle.type0 { animation: particleFly1 3.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        .particle.type1 { animation: particleFly2 4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-        .particle.type2 { animation: particleFly3 3s cubic-bezier(0.5, 1.2, 0.3, 1) forwards; }
-        @keyframes particleFly1 {
-            0% { opacity: 0; transform: scale(0.2) translate(0, 0) rotate(0deg); }
-            15% { opacity: 1; transform: scale(1.2) translate(0, -10px) rotate(20deg); }
-            40% { transform: scale(1) translate(0, -20px) rotate(-10deg); }
-            100% { opacity: 0; transform: scale(0.8) translate(var(--fx), var(--fy)) rotate(var(--fr)); }
-        }
-        @keyframes particleFly2 {
-            0% { opacity: 0; transform: scale(0.1) translate(0, 0) rotate(0deg); }
-            20% { opacity: 1; transform: scale(1.4) translate(10px, -15px) rotate(-30deg); }
-            50% { transform: scale(1) translate(-5px, -25px) rotate(15deg); }
-            100% { opacity: 0; transform: scale(0.6) translate(var(--fx), var(--fy)) rotate(var(--fr)); }
-        }
-        @keyframes particleFly3 {
-            0% { opacity: 0; transform: scale(0) translate(0, 0) rotate(0deg); }
-            10% { opacity: 1; transform: scale(1.5) translate(-10px, -5px) rotate(45deg); }
-            30% { transform: scale(1.1) translate(0, -15px) rotate(-20deg); }
-            70% { opacity: 0.9; }
-            100% { opacity: 0; transform: scale(0.5) translate(var(--fx), var(--fy)) rotate(var(--fr)); }
+        @keyframes particleFly {
+            0% { opacity: 0; transform: scale(0.3) translate(0, 0); }
+            10% { opacity: 0.9; }
+            80% { opacity: 0.8; }
+            100% { opacity: 0; transform: scale(1) translate(var(--fx), var(--fy)); }
         }
 
         /* ========== ЧАТ ========== */
@@ -356,47 +341,37 @@
             }
         }
 
-        // ========== ДОЖДЬ ИЗ ЧАСТИЦ (CSS-анимация, красивая) ==========
+        // ========== ДОЖДЬ ИЗ ЧАСТИЦ ==========
         function spawnHeartShower() {
             clickCount++;
             const count = Math.min(12 + clickCount, 50);
             const container = document.getElementById('particleContainer');
 
-            // Эффект вспышки на сердечке при клике
-            const btn = document.getElementById('heartBtn');
-            btn.style.filter = 'drop-shadow(0 0 60px rgba(255, 0, 0, 1))';
-            setTimeout(() => btn.style.filter = 'drop-shadow(0 0 30px rgba(255, 0, 0, 0.6))', 300);
-
             for (let i = 0; i < count; i++) {
                 const el = document.createElement('div');
-                const type = Math.floor(Math.random() * 3);
-                el.className = 'particle type' + type;
+                el.className = 'particle';
 
-                // 50% сердечко, 50% фраза
-                if (Math.random() < 0.5) {
+                if (Math.random() < 0.4) {
                     el.textContent = lovePhrases[Math.floor(Math.random() * lovePhrases.length)];
-                    el.style.color = ['#ff1744','#ff4081','#e040fb','#d500f9','#ff5252'][Math.floor(Math.random() * 5)];
-                    el.style.fontSize = (13 + Math.random() * 9) + 'px';
-                    el.style.background = 'rgba(255,255,255,0.07)';
-                    el.style.padding = '5px 14px';
+                    el.style.color = ['#ff1744','#ff4081','#e040fb','#ff6f00','#ff5252'][Math.floor(Math.random() * 5)];
+                    el.style.fontSize = (14 + Math.random() * 10) + 'px';
+                    el.style.background = 'rgba(255,255,255,0.06)';
+                    el.style.padding = '4px 12px';
                     el.style.borderRadius = '20px';
-                    el.style.backdropFilter = 'blur(4px)';
-                    el.style.border = '1px solid ' + ['rgba(255,23,68,0.3)','rgba(255,64,129,0.3)','rgba(213,0,249,0.3)'][Math.floor(Math.random() * 3)];
+                    el.style.border = '1px solid rgba(255,255,255,0.1)';
                 } else {
                     el.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
-                    el.style.fontSize = (22 + Math.random() * 26) + 'px';
-                    el.style.textShadow = '0 0 20px rgba(255,23,68,0.6)';
+                    el.style.fontSize = (20 + Math.random() * 24) + 'px';
                 }
 
-                const fx = (-80 + Math.random() * 160) + 'px';
-                const fy = (-90 + Math.random() * 30) + 'px';
-                const fr = (-180 + Math.random() * 360) + 'deg';
+                const fx = (-60 + Math.random() * 120) + 'px';
+                const fy = (-80 + Math.random() * 20) + 'px';
                 el.style.setProperty('--fx', fx);
                 el.style.setProperty('--fy', fy);
-                el.style.setProperty('--fr', fr);
                 el.style.left = (5 + Math.random() * 85) + '%';
                 el.style.top = (5 + Math.random() * 80) + '%';
-                el.style.animationDelay = (Math.random() * 0.4) + 's';
+                el.style.animationDuration = (2 + Math.random() * 2) + 's';
+                el.style.animationDelay = (Math.random() * 0.5) + 's';
 
                 container.appendChild(el);
                 el.addEventListener('animationend', () => el.remove());
